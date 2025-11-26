@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   description:
     "Katalog daring Perpustakaan Digital Ikatan Adhyaksa Dharmakarini Daerah Surakarta",
   icons: {
-    icon: "/logo_iad-removebg-preview.png",
+    icon: "/favicon/favicon.ico",
   },
 };
 
