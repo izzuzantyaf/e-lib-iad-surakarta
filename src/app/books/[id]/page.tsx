@@ -2,18 +2,40 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card"
 import { useBook } from "@/hooks/use-books";
 
 export default function BookDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const [isMobile, setIsMobile] = useState(false);
 
   const {
     data: book,
     isLoading: isLoadingBook,
     isError: isErrorBook,
   } = useBook(id);
+
+  useEffect(() => {
+    // Detect mobile devices
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+        userAgent.toLowerCase()
+      );
+      setIsMobile(isMobileDevice);
+    };
+
+    checkMobile();
+  }, []);
+
+  function getPdfUrl(url: string) {
+    if (isMobile) {
+      return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+    }
+    return url;
+  }
 
   if (isLoadingBook) {
     return (
@@ -62,21 +84,15 @@ export default function BookDetailPage() {
         </span>
       </p>
 
-      <Card className="gap-0">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base md:text-lg">Baca Buku</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="relative w-full overflow-hidden rounded-lg border bg-muted/50">
-            <iframe
-              src={book.url}
-              className="h-[60dvh] min-h-[720px] w-full"
-              title={`PDF Viewer - ${book.title}`}
-              allow="fullscreen"
-            />
-          </div>
-        </CardContent>
-      </Card>
+
+      <div className="relative w-full overflow-hidden rounded-lg border bg-muted/50">
+        <iframe
+          src={getPdfUrl(book.url)}
+          className="h-[60dvh] min-h-[720px] w-full"
+          title={`PDF Viewer - ${book.title}`}
+          allow="fullscreen"
+        />
+      </div>
     </section>
   );
 }
