@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense, useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -13,17 +12,11 @@ import {
   PaginationItem,
   PaginationLink,
 } from "@/components/ui/pagination";
+import { useQueryState, parseAsInteger } from "nuqs";
 
 function HomeContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const query = searchParams.get("q") ?? "";
-  const pageParam = searchParams.get("page") ?? "1";
-  const currentPage = Number.isNaN(Number(pageParam))
-    ? 1
-    : Math.max(1, Number(pageParam));
-  const limit = 12;
+  const [query, setQuery] = useQueryState("q", { defaultValue: "" });
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
   const [searchInput, setSearchInput] = useState(query);
 
@@ -35,36 +28,31 @@ function HomeContent() {
   // Debounce search input changes
   useEffect(() => {
     const timer = setTimeout(() => {
-      const params = new URLSearchParams();
-      if (searchInput.trim()) {
-        params.set("q", searchInput.trim());
+      if (searchInput !== query) {
+        setQuery(searchInput || null);
+        setPage(1);
       }
-      params.set("page", "1");
-      router.push(`/?${params.toString()}`);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchInput, router]);
+  }, [searchInput, query, setQuery, setPage]);
 
   const { data: result, isLoading, isError } = useSearchBooks({
     query,
-    page: currentPage,
-    limit,
+    page,
+    limit: 12,
   });
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const params = new URLSearchParams();
-    if (searchInput.trim()) {
-      params.set("q", searchInput.trim());
+    if (searchInput !== query) {
+      setQuery(searchInput || null);
+      setPage(1);
     }
-    params.set("page", "1");
-    router.push(`/?${params.toString()}`);
   };
 
-  const { books: paginatedBooks = [], total = 0, totalPages = 0 } =
-    result || {};
-  const safePage = Math.min(currentPage, totalPages);
+  const { books: paginatedBooks = [], total = 0, totalPages = 0 } = result || {};
+  const safePage = Math.min(page, totalPages > 0 ? totalPages : 1);
 
   return (
     <section className="flex w-full flex-col gap-6">
@@ -101,11 +89,13 @@ function HomeContent() {
           <PaginationContent>
             <PaginationItem>
               <PaginationLink
-                aria-disabled={safePage === 1}
-                href={`/?${new URLSearchParams({
-                  ...(query ? { q: query } : {}),
-                  page: Math.max(1, safePage - 1).toString(),
-                }).toString()}`}
+                aria-disabled={page === 1}
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setPage((p) => Math.max(1, (p || 1) - 1));
+                }}
+                className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
               >
                 Sebelumnya
               </PaginationLink>
@@ -114,18 +104,24 @@ function HomeContent() {
               <span className="px-2 text-[11px] md:text-xs">
                 Halaman{" "}
                 <span className="font-medium">
-                  {totalPages === 0 ? 0 : safePage}
+                  {totalPages === 0 ? 0 : page}
                 </span>{" "}
                 dari <span className="font-medium">{totalPages}</span>
               </span>
             </PaginationItem>
             <PaginationItem>
               <PaginationLink
-                aria-disabled={safePage === totalPages || totalPages === 0}
-                href={`/?${new URLSearchParams({
-                  ...(query ? { q: query } : {}),
-                  page: Math.min(totalPages, safePage + 1).toString(),
-                }).toString()}`}
+                aria-disabled={page === totalPages || totalPages === 0}
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setPage((p) => Math.min(totalPages, (p || 1) + 1));
+                }}
+                className={
+                  page === totalPages || totalPages === 0
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
               >
                 Selanjutnya
               </PaginationLink>
@@ -183,13 +179,11 @@ function HomeContent() {
                         Diunggah:{" "}
                         {new Date(book.created_at).toLocaleDateString("id-ID")}
                       </span>
-                      <Link
-                        href={`/books/${book.id}`}
-                        onClick={(e) => e.stopPropagation()}
+                      <span
                         className="text-[11px] font-medium text-primary hover:underline"
                       >
                         Lihat detail
-                      </Link>
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
