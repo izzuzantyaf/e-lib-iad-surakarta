@@ -9,6 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@embedpdf/core": "^2.0.0",
+    "@embedpdf/engines": "^2.0.0",
+    "@embedpdf/plugin-document-manager": "^2.0.0",
+    "@embedpdf/plugin-interaction-manager": "^2.0.0",
+    "@embedpdf/plugin-pan": "^2.0.0",
+    "@embedpdf/plugin-render": "^2.0.0",
+    "@embedpdf/plugin-scroll": "^2.0.0",
+    "@embedpdf/plugin-selection": "^2.0.0",
+    "@embedpdf/plugin-thumbnail": "^2.0.0",
+    "@embedpdf/plugin-viewport": "^2.0.0",
+    "@embedpdf/plugin-zoom": "^2.0.0",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
     "@supabase/ssr": "^0.8.0",
@@ -21,7 +32,8 @@
     "next": "16.0.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

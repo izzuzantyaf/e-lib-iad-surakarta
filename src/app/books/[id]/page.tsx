@@ -1,41 +1,21 @@
 "use client";
 
+
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card"
 import { useBook } from "@/hooks/use-books";
+import { PdfViewer } from "@/components/pdf-viewer";
 
 export default function BookDetailPage() {
   const params = useParams();
   const id = params.id as string;
-  const [isMobile, setIsMobile] = useState(false);
 
   const {
     data: book,
     isLoading: isLoadingBook,
     isError: isErrorBook,
   } = useBook(id);
-
-  useEffect(() => {
-    // Detect mobile devices
-    const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
-        userAgent.toLowerCase()
-      );
-      setIsMobile(isMobileDevice);
-    };
-
-    checkMobile();
-  }, []);
-
-  function getPdfUrl(url: string) {
-    if (isMobile) {
-      return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
-    }
-    return url;
-  }
 
   if (isLoadingBook) {
     return (
@@ -85,14 +65,7 @@ export default function BookDetailPage() {
       </p>
 
 
-      <div className="relative w-full overflow-hidden rounded-lg border bg-muted/50">
-        <iframe
-          src={getPdfUrl(book.url)}
-          className="h-[60dvh] min-h-[720px] w-full"
-          title={`PDF Viewer - ${book.title}`}
-          allow="fullscreen"
-        />
-      </div>
+      <PdfViewer url={book.url} />
     </section>
   );
 }
